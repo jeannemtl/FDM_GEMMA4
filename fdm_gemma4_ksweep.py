@@ -70,7 +70,7 @@ def make_stage(K, N, name, samples, epochs, lr):
             "samples": samples, "epochs": epochs, "lr": lr}
 
 KSWEEP_STAGES = [
-    make_stage(40,  256,  "K40  W512  (0.5x window, baseline)",   4000, 2, 3e-5),
+    make_stage(40,  256,  "K40  W512  (0.5x window, baseline)",   4000, 4, 3e-5),
     make_stage(80,  512,  "K80  W1024 (1.0x window edge)",        4000, 2, 3e-5),
     make_stage(99,  512,  "K99  W1024 (edge, THIN nyquist 1Hz)",  4000, 2, 3e-5),
     make_stage(120, 1024, "K120 W2048 (2x window, global-only)",  4000, 2, 3e-5),
