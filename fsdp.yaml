@@ -1,6 +1,6 @@
 compute_environment: LOCAL_MACHINE
 distributed_type: FSDP
-mixed_precision: bf16
+mixed_precision: "no"
 num_processes: 2          # MATCH your GPU count (2 for 2x H200)
 use_cpu: false
 machine_rank: 0

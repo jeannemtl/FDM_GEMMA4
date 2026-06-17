@@ -4,3 +4,5 @@ ckpt_*/
 gemma-4-31B/
 *.safetensors
 __pycache__/
+fsdp_full.log
+ckpt_*/
