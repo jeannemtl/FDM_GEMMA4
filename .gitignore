@@ -6,3 +6,8 @@ gemma-4-31B/
 __pycache__/
 fsdp_full.log
 ckpt_*/
+*.jsonl
+*.log
+fdm_40ch_gemma4_model_*/
+fdm_40ch_gemma4_model_final/
+checkpoints_*/
