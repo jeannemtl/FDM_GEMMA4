@@ -1,0 +1,6 @@
+ksweep_*.jsonl
+ksweep_results.json
+ckpt_*/
+gemma-4-31B/
+*.safetensors
+__pycache__/
