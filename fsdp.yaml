@@ -1,0 +1,42 @@
+compute_environment: LOCAL_MACHINE
+distributed_type: FSDP
+mixed_precision: bf16
+num_processes: 2          # MATCH your GPU count (2 for 2x H200)
+use_cpu: false
+machine_rank: 0
+num_machines: 1
+rdzv_backend: static
+same_network: true
+main_training_function: main
+
+fsdp_config:
+  # FULL_SHARD = shard weights + grads + optimizer state across GPUs.
+  # This is what lets 31B + optimizer state span 2x141GB instead of needing
+  # to fit on one card.
+  fsdp_sharding_strategy: FULL_SHARD
+
+  # Wrap each Gemma decoder block as one shardable unit. VERIFY the class name
+  # against your model: it's almost certainly Gemma4TextDecoderLayer, but confirm with
+  #   python3 -c "from transformers import AutoModelForCausalLM; \
+  #     m=AutoModelForCausalLM.from_pretrained('$GEMMA_DIR'); \
+  #     print(type(m.model.layers[0]).__name__)"
+  # A wrong name silently disables auto-wrap (no sharding -> OOM).
+  fsdp_auto_wrap_policy: TRANSFORMER_BASED_WRAP
+  fsdp_transformer_layer_cls_to_wrap: Gemma4TextDecoderLayer
+
+  # CRITICAL for two-block: only attention weights are trainable, embeddings
+  # and MLPs are frozen. use_orig_params=true lets FSDP handle a mix of
+  # trainable/frozen params correctly. Without it, FSDP flattens params and
+  # the requires_grad split breaks.
+  fsdp_use_orig_params: true
+
+  # Gather full weights for save_pretrained (the eval-by-reload step uses this).
+  fsdp_state_dict_type: FULL_STATE_DICT
+
+  # Memory + startup helpers
+  fsdp_offload_params: false          # set true only if you still OOM; it's slow
+  fsdp_backward_prefetch: BACKWARD_PRE
+  fsdp_forward_prefetch: false
+  fsdp_cpu_ram_efficient_loading: true
+  fsdp_sync_module_states: true
+  fsdp_activation_checkpointing: false   # script calls gradient_checkpointing_enable()
