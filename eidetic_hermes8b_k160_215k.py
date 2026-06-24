@@ -39,6 +39,8 @@ DTYPE = torch.bfloat16
 BATCH_SIZE = 1
 GRAD_ACCUM = 8
 MAX_LENGTH = 4096        # W=2048 FDM block + question + 160-channel answer
+N_SIGMA   = 4.0          # quantizer half-window in composite-std units
+SIGMA_REF = 5.22         # measured real composite std @K160 (stage-invariant 4.95-5.22)
 OUTPUT_PREFIX = "fdm_160ch_hermes8b_215k"
 CHECKPOINT_DIR = "checkpoints_fdm_160ch_hermes8b_215k"
 FINAL_MODEL_DIR = "fdm_160ch_hermes8b_215k_model_final"
@@ -280,8 +282,8 @@ class TurboFDMSignalEncoder:
                 end = min((bi + 1) * samples_per_bit, self.num_tokens_per_encoder)
                 amp = self.a_high if bit == '1' else self.a_low
                 composite[start:end] += amp * np.sin(2*np.pi*self.carrier_freqs[ch]*t[start:end])
-        sig_min = -self.num_channels * self.a_high
-        sig_max =  self.num_channels * self.a_high
+        sig_max = N_SIGMA * SIGMA_REF
+        sig_min = -sig_max
         sig_range = sig_max - sig_min + 1e-10
         norm1 = (composite - sig_min) / sig_range
         q1 = np.clip(np.floor(norm1*(self.num_levels-1)+0.5).astype(int), 0, self.num_levels-1)
